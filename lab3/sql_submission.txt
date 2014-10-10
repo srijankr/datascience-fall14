@@ -1,26 +1,299 @@
 SQL Assignment Submission
 
 === 1
-<INSERT YOUR QUERY HERE>
+create view NumberOfMedals as select c.name as country_name , count(*) as number_of_medals from results r, events e, players p, countries c where r.event_id = e.event_id and p.player_id = r.player_id and c.country_id = p.country_id group by c.name;
 **************** RESULT ***************************************************************
-<INSERT YOUR RESULT HERE>
+               country_name               | number_of_medals 
+------------------------------------------+------------------
+ Costa Rica                               |                2
+ Latvia                                   |                2
+ Estonia                                  |                2
+ Eritrea                                  |                1
+ Turkey                                   |                1
+ Germany                                  |               30
+ France                                   |               12
+ Algeria                                  |                4
+ Slovenia                                 |                1
+ Japan                                    |               21
+ Jamaica                                  |               29
+ Spain                                    |                4
+ Ukraine                                  |               13
+ Belarus                                  |                8
+ Cameroon                                 |                1
+ Zimbabwe                                 |                3
+ Saudi Arabia                             |                1
+ Ireland                                  |                1
+ Denmark                                  |                3
+ Russia                                   |               45
+ Lithuania                                |                3
+ Iceland                                  |                1
+ Portugal                                 |                3
+ Netherlands                              |               27
+ Barbados                                 |                1
+ Nigeria                                  |               13
+ Romania                                  |               13
+ The Bahamas                              |                7
+ Dominican Republic                       |                1
+ Trinidad and Tobago                      |                3
+ Canada                                   |                1
+ Austria                                  |                3
+ China                                    |                8
+ Kenya                                    |               14
+ South Africa                             |               13
+ Australia                                |               76
+ United States                            |              171
+ Poland                                   |                9
+ Slovakia                                 |                2
+ Argentina                                |                1
+ United Kingdom                           |               15
+ Kazakhstan                               |                2
+ Croatia                                  |                1
+ Czech Republic                           |                4
+ Cuba                                     |               14
+               country_name               | number_of_medals 
+------------------------------------------+------------------
+ Costa Rica                               |                2
+ Latvia                                   |                2
+ Estonia                                  |                2
+ Eritrea                                  |                1
+ Turkey                                   |                1
+ Germany                                  |               30
+ France                                   |               12
+ Algeria                                  |                4
+ Slovenia                                 |                1
+ Japan                                    |               21
+ Jamaica                                  |               29
+ Spain                                    |                4
+ Ukraine                                  |               13
+ Belarus                                  |                8
+ Cameroon                                 |                1
+ Zimbabwe                                 |                3
+ Saudi Arabia                             |                1
+ Ireland                                  |                1
+ Denmark                                  |                3
+ Russia                                   |               45
+ Lithuania                                |                3
+ Iceland                                  |                1
+ Portugal                                 |                3
+ Netherlands                              |               27
+ Barbados                                 |                1
+ Nigeria                                  |               13
+ Romania                                  |               13
+ The Bahamas                              |                7
+ Dominican Republic                       |                1
+ Trinidad and Tobago                      |                3
+ Canada                                   |                1
+ Austria                                  |                3
+ China                                    |                8
+ Kenya                                    |               14
+ South Africa                             |               13
+ Australia                                |               76
+ United States                            |              171
+ Poland                                   |                9
+ Slovakia                                 |                2
+ Argentina                                |                1
+ United Kingdom                           |               15
+ Kazakhstan                               |                2
+ Croatia                                  |                1
+ Czech Republic                           |                4
+ Cuba                                     |               14
+ Italy                                    |               16
+ Sweden                                   |               11
+ Ethiopia                                 |               15
+ Greece                                   |                9
+ Brazil                                   |                9
+ Morocco                                  |                7
+ Hungary                                  |                4
+ Mozambique                               |                1
+ Mexico                                   |                3
+ Finland                                  |                1
+ Sri Lanka                                |                1
+ Norway                                   |                3
+ Bulgaria                                 |                1
+(58 rows)
+
 =============================================================================================
 
-=== 2
-<INSERT YOUR QUERY HERE>
+=== 2(a)
+select r.a,r.b,r.c,s.d from r,s where r.c = s.c or (r.c is null and s.c is null);
 **************** RESULT ***************************************************************
-<INSERT YOUR RESULT HERE>
+     a      | b  | c  |     d      
+------------+----+----+------------
+ a3         | 30 | 30 | d1        
+ a4         |  0 |    | d2        
+(2 rows)
+
+=============================================================================================
+
+=== 2(b)
+select r.a,r.b,r.c,s.d from r full outer join s on r.c = s.c where ((r.c is null and s.c is null) or (r.c is not null and s.c is not null)) union (select r.a,r.b,r.c,s.d from r,s  where r.c = s.c or (r.c is null and s.c is null));
+**************** RESULT ***************************************************************
+     a      | b  | c  |     d      
+------------+----+----+------------
+ a3         | 30 | 30 | d1        
+ a4         |  0 |    | d2        
+ a4         |  0 |    | 
+            |    |    | d2        
+(4 rows)
 =============================================================================================
 
 === 3
-<INSERT YOUR QUERY HERE>
+create function updateTeamMedals() returns trigger as $updateTeamMedals$
+declare
+	isteamevent int;
+	countryid text;
+begin
+	select is_team_event into isteamevent from events e where e.event_id = NEW.event_id;
+	select country_id into countryid from players p where p.player_id = NEW.player_id;
+	if isteamevent = 1 then
+	   insert into TeamMedals values(countryid, new.event_id, new.medal, new.result);
+	end if;
+	return new;
+end;
+$updateTeamMedals$ language plpgsql;
+create trigger updateTeamMedals after insert on results for each row execute procedure updateTeamMedals();
 **************** RESULT ***************************************************************
-<INSERT YOUR RESULT HERE>
 =============================================================================================
 
 === 4
-<INSERT YOUR QUERY HERE>
+DO language plpgsql $$
+DECLARE
+var record;
+points integer;
+temp integer;
+p text;
+BEGIN
+FOR var IN select rtrim(e.name) as ename, array_agg(rtrim(p.name)) as arr from results r, events e, players p where p.country_id = 'USA' and p.player_id = r.player_id and e.event_id = r.event_id and e.olympic_id = 'ATH2004'and r.medal = 'GOLD' group by e.name
+LOOP
+RAISE NOTICE '<medal>';
+RAISE NOTICE E'\t<event> % </event>', var.ename;
+if array_length(var.arr, 1) > 1 then
+RAISE NOTICE E'\t<players>';
+FOREACH p IN ARRAY var.arr
+LOOP
+RAISE NOTICE E'\t\t<player> % </player>', p;
+END LOOP;
+RAISE NOTICE E'\t</players>';
+ELSE
+FOREACH p IN ARRAY var.arr
+LOOP
+RAISE NOTICE E'\t<player> % </player>', p;
+END LOOP;
+end if;
+RAISE NOTICE '</medal>';
+END LOOP;
+END
+$$;
 **************** RESULT ***************************************************************
-<INSERT YOUR RESULT HERE>
+NOTICE:  <medal>
+NOTICE:  	<event> 100m Butterfly Men </event>
+NOTICE:  	<player> Michael Phelps </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 200m Men </event>
+NOTICE:  	<player> Shawn Crawford </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 400m Individual Medley Men </event>
+NOTICE:  	<player> Michael Phelps </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 100m Men </event>
+NOTICE:  	<player> Justin Gatlin </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 200m Individual Medley Men </event>
+NOTICE:  	<player> Michael Phelps </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 100m Backstroke Women </event>
+NOTICE:  	<player> Natalie Coughlin </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 4x200m Freestyle Relay Men </event>
+NOTICE:  	<players>
+NOTICE:  		<player> Peter Vanderkaay </player>
+NOTICE:  		<player> Michael Phelps </player>
+NOTICE:  		<player> Ryan Lochte </player>
+NOTICE:  		<player> Klete Keller </player>
+NOTICE:  		<player> Scott Goldblatt </player>
+NOTICE:  	</players>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> Long Jump Men </event>
+NOTICE:  	<player> Dwight Phillips </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 100m Hurdles Women </event>
+NOTICE:  	<player> Joanna Hayes </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 4x400m Relay Women </event>
+NOTICE:  	<players>
+NOTICE:  		<player> Deedee Trotter </player>
+NOTICE:  		<player> Sanya Richards </player>
+NOTICE:  		<player> Monique Henderson </player>
+NOTICE:  		<player> Monique Hennagan </player>
+NOTICE:  	</players>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 400m Men </event>
+NOTICE:  	<player> Jeremy Wariner </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 200m Breaststroke Women </event>
+NOTICE:  	<player> Amanda Beard </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 4x200m Freestyle Relay Women </event>
+NOTICE:  	<players>
+NOTICE:  		<player> Dana Vollmer </player>
+NOTICE:  		<player> Kaitlin Sandeno </player>
+NOTICE:  		<player> Carly Piper </player>
+NOTICE:  		<player> Lindsay Benko </player>
+NOTICE:  		<player> Natalie Coughlin </player>
+NOTICE:  	</players>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 200m Backstroke Men </event>
+NOTICE:  	<player> Aaron Peirsol </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 4x100m Medley Relay Men </event>
+NOTICE:  	<players>
+NOTICE:  		<player> Neil Walker </player>
+NOTICE:  		<player> Aaron Peirsol </player>
+NOTICE:  		<player> Michael Phelps </player>
+NOTICE:  		<player> Jason Lezak </player>
+NOTICE:  		<player> Brendan Hansen </player>
+NOTICE:  		<player> Lenny Krayzelburg </player>
+NOTICE:  		<player> Ian Crocker </player>
+NOTICE:  	</players>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 4x400m Relay Men </event>
+NOTICE:  	<players>
+NOTICE:  		<player> Jeremy Wariner </player>
+NOTICE:  		<player> Darold Williamson </player>
+NOTICE:  		<player> Otis Harris Jr </player>
+NOTICE:  		<player> Derrick Brew </player>
+NOTICE:  	</players>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 50m Freestyle Men </event>
+NOTICE:  	<player> Gary Hall Jr. </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 100m Backstroke Men </event>
+NOTICE:  	<player> Aaron Peirsol </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> Pole Vault Men </event>
+NOTICE:  	<player> Timothy Mack </player>
+NOTICE:  </medal>
+NOTICE:  <medal>
+NOTICE:  	<event> 200m Butterfly Men </event>
+NOTICE:  	<player> Michael Phelps </player>
+NOTICE:  </medal>
 =============================================================================================
 
