@@ -1,0 +1,7 @@
+import unicodecsv
+
+fw = open("wc1-python-edited.csv","w")
+writer = unicodecsv.writer(fw, encoding="utf8", lineterminator="\n")
+writer.writerow(("Team","Year","Position"))
+
+f = open("cmsc.txt","r")
