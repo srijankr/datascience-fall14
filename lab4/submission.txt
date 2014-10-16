@@ -1,6 +1,357 @@
 Lab 4 Submission
 
 =========== Data Wrangler Script: CMSC
+from wrangler import dw
+import sys
+
+if(len(sys.argv) < 3):
+	sys.exit('Error: Please include an input and output file.  Example python script.py input.csv output.csv')
+
+w = dw.DataWrangler()
+
+# Split data repeatedly on newline  into  rows
+w.add(dw.Split(column=["data"],
+               table=0,
+               status="active",
+               drop=True,
+               result="row",
+               update=False,
+               insert_position="right",
+               row=None,
+               on="\n",
+               before=None,
+               after=None,
+               ignore_between=None,
+               which=1,
+               max=0,
+               positions=None,
+               quote_character=None))
+
+# Extract from data on 'CMSC any number '
+w.add(dw.Extract(column=["data"],
+                 table=0,
+                 status="active",
+                 drop=False,
+                 result="column",
+                 update=False,
+                 insert_position="right",
+                 row=None,
+                 on="CMSC\\d+",
+                 before=None,
+                 after=None,
+                 ignore_between=None,
+                 which=1,
+                 max=1,
+                 positions=None))
+
+# Fill extract  with values from above
+w.add(dw.Fill(column=["extract"],
+              table=0,
+              status="active",
+              drop=False,
+              direction="down",
+              method="copy",
+              row=None))
+
+# Delete  rows where data is null
+w.add(dw.Filter(column=[],
+                table=0,
+                status="active",
+                drop=False,
+                row=dw.Row(column=[],
+             table=0,
+             status="active",
+             drop=False,
+             conditions=[dw.IsNull(column=[],
+                table=0,
+                status="active",
+                drop=False,
+                lcol="data",
+                value=None,
+                op_str="is null")])))
+
+# Delete  rows where data starts with 'CMSC'
+w.add(dw.Filter(column=[],
+                table=0,
+                status="active",
+                drop=False,
+                row=dw.Row(column=[],
+             table=0,
+             status="active",
+             drop=False,
+             conditions=[dw.StartsWith(column=[],
+                    table=0,
+                    status="active",
+                    drop=False,
+                    lcol="data",
+                    value="CMSC",
+                    op_str="starts with")])))
+
+# Wrap  rows where data starts with '0'
+w.add(dw.Wrap(column=[],
+              table=0,
+              status="active",
+              drop=False,
+              row=dw.Row(column=[],
+             table=0,
+             status="active",
+             drop=False,
+             conditions=[dw.StartsWith(column=[],
+                    table=0,
+                    status="active",
+                    drop=False,
+                    lcol="data",
+                    value="0",
+                    op_str="starts with")])))
+
+# Drop wrap3
+w.add(dw.Drop(column=["wrap3"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Drop wrap5
+w.add(dw.Drop(column=["wrap5"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Drop wrap7
+w.add(dw.Drop(column=["wrap7"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Drop wrap9
+w.add(dw.Drop(column=["wrap9"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Extract from wrap4 between 'Total: ' and ','
+w.add(dw.Extract(column=["wrap4"],
+                 table=0,
+                 status="active",
+                 drop=False,
+                 result="column",
+                 update=False,
+                 insert_position="right",
+                 row=None,
+                 on=".*",
+                 before=",",
+                 after="Total: ",
+                 ignore_between=None,
+                 which=1,
+                 max=1,
+                 positions=None))
+
+# Extract from wrap4 between 'Open: ' and ','
+w.add(dw.Extract(column=["wrap4"],
+                 table=0,
+                 status="active",
+                 drop=False,
+                 result="column",
+                 update=False,
+                 insert_position="right",
+                 row=None,
+                 on=".*",
+                 before=",",
+                 after="Open: ",
+                 ignore_between=None,
+                 which=1,
+                 max=1,
+                 positions=None))
+
+# Extract from wrap4 between 'Waitlist: ' and ')'
+w.add(dw.Extract(column=["wrap4"],
+                 table=0,
+                 status="active",
+                 drop=False,
+                 result="column",
+                 update=False,
+                 insert_position="right",
+                 row=None,
+                 on=".*",
+                 before="\\)",
+                 after="Waitlist: ",
+                 ignore_between=None,
+                 which=1,
+                 max=1,
+                 positions=None))
+
+# Split wrap6 between ' ' and ' any number '
+w.add(dw.Split(column=["wrap6"],
+               table=0,
+               status="active",
+               drop=True,
+               result="column",
+               update=False,
+               insert_position="right",
+               row=None,
+               on=".*",
+               before="\\d+",
+               after=" ",
+               ignore_between=None,
+               which=1,
+               max=1,
+               positions=None,
+               quote_character=None))
+
+# Split wrap8 between '  ' and ' any number '
+w.add(dw.Split(column=["wrap8"],
+               table=0,
+               status="active",
+               drop=True,
+               result="column",
+               update=False,
+               insert_position="right",
+               row=None,
+               on=".*",
+               before="\\d+",
+               after="  ",
+               ignore_between=None,
+               which=1,
+               max=1,
+               positions=None,
+               quote_character=None))
+
+# Merge wrap1, wrap  with glue   
+w.add(dw.Merge(column=["wrap1","wrap"],
+               table=0,
+               status="active",
+               drop=False,
+               result="column",
+               update=False,
+               insert_position="right",
+               row=None,
+               glue=" "))
+
+# Split merge between ' ' and ' any number '
+w.add(dw.Split(column=["merge"],
+               table=0,
+               status="active",
+               drop=True,
+               result="column",
+               update=False,
+               insert_position="right",
+               row=None,
+               on=".*",
+               before="\\d+",
+               after=" ",
+               ignore_between=None,
+               which=1,
+               max=1,
+               positions=None,
+               quote_character=None))
+
+# Drop wrap
+w.add(dw.Drop(column=["wrap"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Drop wrap1
+w.add(dw.Drop(column=["wrap1"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Drop wrap4
+w.add(dw.Drop(column=["wrap4"],
+              table=0,
+              status="active",
+              drop=True))
+
+# Set  split4  name to  Course No
+w.add(dw.SetName(column=["split4"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Course No"],
+                 header_row=None))
+
+# Set  split5  name to  Section No
+w.add(dw.SetName(column=["split5"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Section No"],
+                 header_row=None))
+
+# Set  wrap2  name to  Instructor
+w.add(dw.SetName(column=["wrap2"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Instructor"],
+                 header_row=None))
+
+# Set  extract2  name to  Waitlist seats
+w.add(dw.SetName(column=["extract2"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Waitlist seats"],
+                 header_row=None))
+
+# Set  extract1  name to  Open seats
+w.add(dw.SetName(column=["extract1"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Open seats"],
+                 header_row=None))
+
+# Set  extract  name to  Total seats
+w.add(dw.SetName(column=["extract"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Total seats"],
+                 header_row=None))
+
+# Set  split  name to  Day
+w.add(dw.SetName(column=["split"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Day"],
+                 header_row=None))
+
+# Set  split1  name to  Time
+w.add(dw.SetName(column=["split1"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Time"],
+                 header_row=None))
+
+# Set  split2  name to  split
+w.add(dw.SetName(column=["split2"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["split"],
+                 header_row=None))
+
+# Set  split  name to  Bldg
+w.add(dw.SetName(column=["split"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Bldg"],
+                 header_row=None))
+
+# Set  split3  name to  Room no
+w.add(dw.SetName(column=["split3"],
+                 table=0,
+                 status="active",
+                 drop=True,
+                 names=["Room no"],
+                 header_row=None))
+
+w.apply_to_file(sys.argv[1]).print_csv(sys.argv[2])
+
 
 
 =========== Data Wrangler Script: World Cup 1
@@ -16,11 +367,96 @@ Lab 4 Submission
 
 
 =========== Python Script: CMSC
+import unicodecsv
 
+fw = open("cmsc-python-edited.csv","w")
+writer = unicodecsv.writer(fw, encoding="utf8", lineterminator="\n")
+writer.writerow(("Course No.","Section No.","Instructor","Seats","Open","Waitlist","Days","Time","Bldg.","Room No."))
+
+f = open("cmsc.txt","r")
+
+l = f.readline().strip()
+while l!='':
+    course = l
+    l = f.readline().strip()
+    while l!= '':
+        section = l
+        instr = f.readline().strip()
+        l = f.readline().strip().split(": ")
+        print l
+        totalseats = l[1].split(",")[0]
+        openseats = l[2].split(",")[0]
+        waitlist = l[3].split(")")[0]
+        l = f.readline().strip().split()
+        day = l[0]
+        time = ' '.join(l[1:])
+        l = f.readline().strip().split()
+        bldg = l[0]
+        room = l[1]
+        writer.writerow((course, section, instr, totalseats, openseats, waitlist, day, time, bldg, room))
+        l = f.readline().strip()
+    l = f.readline().strip()
+f.close()
+fw.close()        
 
 =========== Python Script: World Cup 1
+import unicodecsv
+import re
+
+fw = open("wc1-python-edited.csv","w")
+writer = unicodecsv.writer(fw, encoding="utf8", lineterminator="\n")
+writer.writerow(("Team","Year","Position"))
+
+f = open("worldcup.txt","r")
+f.readline()
+
+l = f.readline().strip()
+while l!="|}":
+    l = f.readline().strip()
+    country = l.split("{{fb|")[1].split("}}")[0]
+    for i in range(4):
+        pos = re.findall("\|\d{4}]]", f.readline().strip())
+        for pos in pos:
+            writer.writerow((country, pos[1:-2], i+1))
+    f.readline()
+    l = f.readline().strip()
+fw.close()
+f.close()
 
 
 =========== Python Script: World Cup 2
 
 
+import unicodecsv
+import re
+
+fw = open("wc2-python-edited.csv","w")
+writer = unicodecsv.writer(fw, encoding="utf8", lineterminator="\n")
+
+awards = {}
+f = open("worldcup.txt","r")
+f.readline()
+
+l = f.readline().strip()
+while l!="|}":
+    l = f.readline().strip()
+    country = l.split("{{fb|")[1].split("}}")[0]
+    countryawards = awards.get(country, {})
+    for i in range(4):
+        pos = re.findall("\|\d{4}]]", f.readline().strip())
+        for pos in pos:
+            countryawards[pos[1:-2]] = i+1
+    awards[country] = countryawards
+    f.readline()
+    l = f.readline().strip()
+
+f.close()
+
+writer.writerow([i for i in range(1930,2015,4)])
+for k in awards:
+    x = [k]
+    print k, awards[k].keys()
+    for i in range(1930, 2015, 4):
+        x.append('-' if str(i) not in awards[k].keys() else awards[k][str(i)])
+    writer.writerow(x)
+fw.close()
