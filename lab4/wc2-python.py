@@ -1,8 +1,7 @@
 import unicodecsv
 import re
 
-fw = open("wc2-python-edited.csv","w")
-writer = unicodecsv.writer(fw, encoding="utf8", lineterminator="\n")
+fw = open("wc2.csv","w")
 
 awards = {}
 f = open("worldcup.txt","r")
@@ -20,14 +19,15 @@ while l!="|}":
     awards[country] = countryawards
     f.readline()
     l = f.readline().strip()
-
 f.close()
 
-writer.writerow([i for i in range(1930,2015,4)])
+
+for i in range(1930,2015,4):
+    fw.write(" ," + str(i))
+fw.write("\n")
 for k in awards:
-    x = [k]
-    print k, awards[k].keys()
+    fw.write(k)
     for i in range(1930, 2015, 4):
-        x.append('-' if str(i) not in awards[k].keys() else awards[k][str(i)])
-    writer.writerow(x)
+        fw.write(', -' if str(i) not in awards[k].keys() else ', ' + str(awards[k][str(i)]))
+    fw.write("\n")
 fw.close()

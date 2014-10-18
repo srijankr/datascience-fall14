@@ -1,5 +1,4 @@
 Lab 4 Submission
-Name: Srijan Kumar
 
 =========== Data Wrangler Script: CMSC
 from wrangler import dw
@@ -353,6 +352,8 @@ w.add(dw.SetName(column=["split3"],
 
 w.apply_to_file(sys.argv[1]).print_csv(sys.argv[2])
 
+
+
 =========== Data Wrangler Script: World Cup 1
 from wrangler import dw
 import sys
@@ -484,6 +485,23 @@ w.add(dw.Extract(column=["split3"],
                  max=1,
                  positions=None))
 
+# Extract from split3 between '[\[' and ' FIFA'
+w.add(dw.Extract(column=["split3"],
+                 table=0,
+                 status="active",
+                 drop=False,
+                 result="column",
+                 update=False,
+                 insert_position="right",
+                 row=None,
+                 on=".*",
+                 before=" FIFA",
+                 after="\\[\\[",
+                 ignore_between=None,
+                 which=1,
+                 max=1,
+                 positions=None))
+
 # Drop split3
 w.add(dw.Drop(column=["split3"],
               table=0,
@@ -581,68 +599,9 @@ w.add(dw.Filter(column=[],
                percent_valid=0,
                num_valid=0)])))
 
-# Fill extract2  with values from above
-w.add(dw.Fill(column=["extract2"],
-              table=0,
-              status="active",
-              drop=False,
-              direction="down",
-              method="copy",
-              row=None))
-
-# Merge extract2, extract, extract1, extract3...  with glue  ,
-w.add(dw.Merge(column=["extract2","extract","extract1","extract3","extract4","extract5"],
-               table=0,
-               status="active",
-               drop=False,
-               result="column",
-               update=False,
-               insert_position="right",
-               row=None,
-               glue=","))
-
-# Drop extract, extract1, extract2, extract3...
-w.add(dw.Drop(column=["extract","extract1","extract2","extract3","extract4","extract5"],
-              table=0,
-              status="active",
-              drop=True))
-
-# Split merge repeatedly on ','
-w.add(dw.Split(column=["merge"],
-               table=0,
-               status="active",
-               drop=True,
-               result="column",
-               update=False,
-               insert_position="right",
-               row=None,
-               on=",",
-               before=None,
-               after=None,
-               ignore_between=None,
-               which=1,
-               max="0",
-               positions=None,
-               quote_character=None))
-
-# Delete  rows where split8 is null
-w.add(dw.Filter(column=[],
-                table=0,
-                status="active",
-                drop=False,
-                row=dw.Row(column=[],
-             table=0,
-             status="active",
-             drop=False,
-             conditions=[dw.IsNull(column=[],
-                table=0,
-                status="active",
-                drop=False,
-                lcol="split8",
-                value=None,
-                op_str="is null")])))
-
 w.apply_to_file(sys.argv[1]).print_csv(sys.argv[2])
+
+
 
 =========== Data Wrangler Script: World Cup 2
 
@@ -651,7 +610,7 @@ w.apply_to_file(sys.argv[1]).print_csv(sys.argv[2])
 cat cmsc.txt | grep -v '^$' | awk -v OFS=',' '/^(CSI|AVW|JMP|ITV|MTH)/ {print $1, $2} !/^(CSI|AVW|JMP|ITV|MTH) / {print $0}' | awk -F')' '/^Seats/ {print $1} !/^Seats/ {print $0}' | awk -F',' '/^Seats/ {print $1, $2, $3} !/^Seats/ {print $0}' | awk -v OFS=',' '/^CMSC/ {course = $1} /^0/ {print course, $0} !/(^CMSC|^0|^Seats)/ {print $0} /^Seats/ {print $3,$5,$7} ' | awk '/^CMSC/ {print combined; combined = $0} !/^CMSC/ {combined = combined", "$0;} END {print combined}'
 
 =========== UNIX Tools Command: World Cup 1
-cat worldcup.txt | tail +3 | sed 's/|style="background:#fff68f"|\|{{//g' | sed 's/}}\|}}/\ /g' | sed 's/(fb\||\|fb\|)//g' | awk '/^(fb|\|fb)/ {num = 0;print $0} !/^(fb|\|fb)/{num = num + 1; if(num < 5) print num," ",$0}' | sed 's/\|fb\|//g' | sed 's/fb\|//g' | awk '/^[A-Z]/ {country = $1} !/^[A-Z]/ {print country, $0}' | grep -v 'sort dash' | grep -v '-' | sed 's/\|[0-9][0-9][0-9][0-9]//g' | sed 's/FIFA\ World\ Cup//g' | sed 's/(\[\[//g' | sed 's/]])//g' | sed 's/\[\[//g' | sed 's/]]*//g' | sed 's/#*//g' | sed 's/\*//g' | sed 's/\,//g' | sed 's/[0-9]\|//g' | awk -v OFS=','  '// { country = $1; medal = $2; for(i = 4; i <= NF; i++) {print country, $i, medal;}}'
+
 
 =========== Python Script: CMSC
 import unicodecsv
